@@ -36,7 +36,12 @@ func TestAuthentication(t *testing.T) {
   go websupport.Start(webserver, webListener)
   testsupport.WaitForHealthy(webserver, "/health")
 
-  signInData := url.Values{
+  get, _ := http.Get("http://localhost:18879")
+  body, _ := io.ReadAll(get.Body)
+  assert.Contains(t, string(body), "Client application")
+  assert.Contains(t, string(body), "Sign in with the Authorization Server")
+
+  values := url.Values{
     "client_id":    []string{"aClientId"},
     "redirect_url": []string{"http://localhost:18879/callback"},
   }
@@ -49,7 +54,7 @@ func TestAuthentication(t *testing.T) {
       return nil
     },
   }
-  resp, _ := client.Post("http://localhost:18877/signin", "application/x-www-form-urlencoded", strings.NewReader(signInData.Encode()))
+  resp, _ := client.Post("http://localhost:18877/signin", "application/x-www-form-urlencoded", strings.NewReader(values.Encode()))
   assert.Equal(t, http.StatusOK, resp.StatusCode)
 
   request, _ := http.NewRequest("GET", "http://localhost:18879", nil)
