@@ -1,0 +1,27 @@
+services:
+  authorization-server:
+    image: oauth-starter
+    container_name: oauth-authorization-server
+    ports:
+      - "8887:8887"
+    command: authorizationserver
+    environment:
+      PORT: 8887
+
+  resource-server:
+    image: oauth-starter
+    container_name: oauth-resource-server
+    ports:
+      - "8888:8888"
+    command: resourceserver
+    environment:
+      PORT: 8888
+  web-server:
+    image: oauth-starter
+    container_name: oauth-web-server
+    ports:
+      - "8889:8889"
+    command: webserver
+    environment:
+      PORT: 8889
+      CREDENTIALS_FILE: '{"client_id":"101010","client_secret":"super_private","auth_uri":"http://localhost:8887/auth","token_uri":"http://oauth-authorization-server:8887/token","callback_url":"http://localhost:8889/callback"}'

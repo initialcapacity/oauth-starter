@@ -5,9 +5,23 @@ that includes an oauth client, authorization server, and resource server.
 
 ## Getting Started
 
-_hang tight!_
+Install the following prerequisites.
 
-This project is work in progress.
+* [Go 1.18](https://go.dev)
+* [Pack](https://buildpacks.io)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+Build with Pack.
+
+```bash
+pack build oauth-starter --builder heroku/buildpacks:20
+```
+
+Run with docker compose.
+
+```bash
+docker-compose up
+````
 
 ## Development
 

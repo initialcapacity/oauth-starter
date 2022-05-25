@@ -2,6 +2,8 @@ module github.com/initialcapacity/oauth-starter
 
 go 1.18
 
+// +heroku goVersion go1.18
+
 require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
