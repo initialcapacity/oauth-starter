@@ -1,0 +1,13 @@
+{{- template "base" .}}
+{{- define "main"}}
+    <section>
+        {{- $authentication_url := index .Map "authentication_url"}}
+        {{- $client_id := index .Map "client_id"}}
+        {{- $response_type := index .Map "$response_type"}}
+        {{- $redirect_url := index .Map "redirect_url"}}
+        <div class="container">
+            <a href="{{- $authentication_url}}?response_type={{- $response_type}}&client_id={{- $client_id }}&redirect_url={{- $redirect_url}}">
+                Sign in with the Authorization Server</a>
+        </div>
+    </section>
+{{- end}}

@@ -1,0 +1,26 @@
+{{- template "base" .}}
+{{- define "main"}}
+    {{- $client_id := index .Map "client_id"}}
+    {{- $redirect_url := index .Map "redirect_url"}}
+    <section>
+        <div class="container">
+            <p>Sign in to continue to the client application.</p>
+            <form action="signin" method="post">
+                <fieldset>
+                    <label>
+                        Username
+                        <input type="text" name="username">
+                    </label>
+
+                    <label>
+                        Password
+                        <input type="password" name="password">
+                    </label>
+                </fieldset>
+                <input type="hidden" name="client_id" value="{{- $client_id }}">
+                <input type="hidden" name="redirect_url" value="{{- $redirect_url }}">
+                <input type="submit" value="Sign in" class="button">
+            </form>
+        </div>
+    </section>
+{{- end}}
