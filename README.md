@@ -1,4 +1,4 @@
-# Oauth starter
+# OAuth starter
 
 An [application continuum](https://www.appcontinuum.io/) style example using golang
 that includes an oauth client, authorization server, and resource server.
