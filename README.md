@@ -3,8 +3,11 @@
 [![Build results](https://github.com/initialcapacity/oauth-starter/workflows/build/badge.svg)](https://github.com/initialcapacity/oauth-starter/actions)
 [![codecov](https://codecov.io/gh/initialcapacity/oauth-starter/branch/main/graph/badge.svg)](https://codecov.io/gh/initialcapacity/oauth-starter)
 
-An [application continuum](https://www.appcontinuum.io/) style example using golang
-that includes an oauth client, authorization server, and resource server.
+An [application continuum](https://www.appcontinuum.io/) style example using Golang
+that includes an OAuth 2 server with PKCE support.
+
+* [OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749)
+* [Proof Key for Code Exchange](https://datatracker.ietf.org/doc/html/rfc7636)
 
 ## Getting Started
 
