@@ -77,6 +77,7 @@ func (a *App) login(writer http.ResponseWriter, _ *http.Request) {
     "redirect_url":          a.callbackUrl,
     "code_challenge":        challenge,
     "code_challenge_method": "S256",
+    "scope":                 "openid email",
   }
   _ = websupport.ModelAndView(writer, &Resources, "login", websupport.Model{Map: data})
 }

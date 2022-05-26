@@ -1,6 +1,7 @@
 package authorization_test
 
 import (
+  "encoding/json"
   "fmt"
   "github.com/initialcapacity/oauth-starter/pkg/authorization"
   "github.com/initialcapacity/oauth-starter/pkg/pkcesupport"
@@ -59,7 +60,19 @@ func TestAuthentication(t *testing.T) {
   }
 
   postForToken, _ := client.Post(fmt.Sprintf("http://%s/token", server.Addr), "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+  tokenInfo := struct {
+    AccessToken  string `json:"access_token"`
+    TokenType    string `json:"token_type"`
+    ExpiresIn    int    `json:"expires_in"`
+    RefreshToken string `json:"refresh_token"`
+    IdToken      string `json:"id_token"`
+  }{}
+  _ = json.NewDecoder(postForToken.Body).Decode(&tokenInfo)
   assert.Equal(t, http.StatusCreated, postForToken.StatusCode)
+  assert.Equal(t, "anAccessToken", tokenInfo.AccessToken)
+  assert.Equal(t, "Bearer", tokenInfo.TokenType)
+  assert.Equal(t, "aRefreshToken", tokenInfo.RefreshToken)
+  assert.Equal(t, "anIdToken", tokenInfo.IdToken)
 
   badData := url.Values{
     "grant_type":    []string{"authorization_code"},

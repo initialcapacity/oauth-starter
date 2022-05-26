@@ -55,6 +55,7 @@ func (a *App) authenticate(writer http.ResponseWriter, request *http.Request) {
   }
   // todo - confirm params were received
   // todo - verify client_id and redirect_url
+  // todo - verify that a scope parameter is present and contains the openid scope value (openid 3.1.2.2)
   _ = websupport.ModelAndView(writer, &Resources, "grant_access", websupport.Model{Map: data})
 }
 
@@ -70,7 +71,7 @@ func (a *App) signIn(writer http.ResponseWriter, request *http.Request) {
   a.codeChallenge = codeChallenge
   authorizationCode := "42"
 
-  http.Redirect(writer, request, redirectUrl+"?code="+authorizationCode, http.StatusFound)
+  http.Redirect(writer, request, redirectUrl+"?code="+authorizationCode, http.StatusFound) // (oauth ietf 4.1.2)
 }
 
 func (a *App) token(writer http.ResponseWriter, request *http.Request) {
@@ -88,9 +89,19 @@ func (a *App) token(writer http.ResponseWriter, request *http.Request) {
 
   // todo - move to json web token
   data, _ := json.Marshal(struct {
-    AccessToken string `json:"access_token"`
-  }{"anAccessToken"})
-
+    AccessToken  string `json:"access_token"`
+    TokenType    string `json:"token_type"`
+    ExpiresIn    int    `json:"expires_in"`
+    RefreshToken string `json:"refresh_token"`
+    IdToken      string `json:"id_token"`
+  }{
+    "anAccessToken",
+    "Bearer",
+    3600,
+    "aRefreshToken",
+    "anIdToken",
+  })
+  writer.Header().Add("Content-Type", "application/json")
   writer.WriteHeader(http.StatusCreated)
   _, _ = writer.Write(data)
 }
