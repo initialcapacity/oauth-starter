@@ -11,6 +11,7 @@ import (
   "net/http"
   "net/url"
   "os"
+  "regexp"
   "strings"
   "testing"
 )
@@ -40,10 +41,17 @@ func TestAuthentication(t *testing.T) {
   body, _ := io.ReadAll(get.Body)
   assert.Contains(t, string(body), "Client application")
   assert.Contains(t, string(body), "Sign in with the Authorization Server")
+  reg := regexp.MustCompile("&code_challenge=(.*?)")
+  challenge := reg.FindStringSubmatch(string(body))[1]
+
+  // click sign in...
 
   values := url.Values{
-    "client_id":    []string{"aClientId"},
-    "redirect_url": []string{"http://localhost:18879/callback"},
+    "username":       []string{"jerry.cantrell@gmail.com"},
+    "password":       []string{"boogydepot"},
+    "client_id":      []string{"aClientId"},
+    "redirect_url":   []string{"http://localhost:18879/callback"},
+    "code_challenge": []string{challenge},
   }
   var cookie *http.Cookie
   client := &http.Client{

@@ -8,6 +8,7 @@ import (
   "github.com/gorilla/mux"
   "github.com/initialcapacity/oauth-starter/pkg/healthsupport"
   "github.com/initialcapacity/oauth-starter/pkg/metricssupport"
+  "github.com/initialcapacity/oauth-starter/pkg/pkcesupport"
   "github.com/initialcapacity/oauth-starter/pkg/static"
   "github.com/initialcapacity/oauth-starter/pkg/websupport"
   "io/fs"
@@ -22,6 +23,7 @@ var (
 )
 
 type App struct {
+  codeChallenge string
 }
 
 func (a *App) LoadHandlers() func(x *mux.Router) {
@@ -47,29 +49,44 @@ func (a *App) dashboard(writer http.ResponseWriter, _ *http.Request) {
 
 func (a *App) authenticate(writer http.ResponseWriter, request *http.Request) {
   data := map[string]any{
-    "client_id":    request.URL.Query().Get("client_id"),
-    "redirect_url": request.URL.Query().Get("redirect_url"),
+    "client_id":      request.URL.Query().Get("client_id"),
+    "redirect_url":   request.URL.Query().Get("redirect_url"),
+    "code_challenge": request.URL.Query().Get("code_challenge"),
   }
+  // todo - confirm params were received
+  // todo - verify client_id and redirect_url
   _ = websupport.ModelAndView(writer, &Resources, "grant_access", websupport.Model{Map: data})
 }
 
 func (a *App) signIn(writer http.ResponseWriter, request *http.Request) {
   _ = request.ParseForm()
   redirectUrl := request.Form.Get("redirect_url")
-  // todo - confirm client_id and redirect_url
-  // todo - confirm username and password
+  codeChallenge := request.Form.Get("code_challenge")
+  // todo - confirm params were received; client_id, code_challenge and redirect_url
+  // todo - verify client_id and redirect_url
+  // todo - authenticate; username and password
+  // todo - associate the "code_challenge" and "code_challenge_method" values with the authorization code (pkce ietf 4.4)
 
-  accessCode := "42"
+  a.codeChallenge = codeChallenge
+  authorizationCode := "42"
 
-  http.Redirect(writer, request, redirectUrl+"?code="+accessCode, http.StatusFound)
+  http.Redirect(writer, request, redirectUrl+"?code="+authorizationCode, http.StatusFound)
 }
 
 func (a *App) token(writer http.ResponseWriter, request *http.Request) {
-  // todo - authenticate the client - client_id, client_secret
+  // todo - confirm params were received; authorization_code, client_id, code_verifier and redirect_url
   // todo - ensure that the authorization code was issued to the authenticated confidential client
-  // todo - verify that the authorization code is valid - code, client_id, redirect_url
+  // todo - verify that the authorization code is valid - code, client_id, code_verifier, and redirect_url
   // todo - ensure that the "redirect_uri" parameter is present
 
+  _ = request.ParseForm()
+  verifier := request.Form.Get("code_verifier") // prevents from CSRF and authorization code attacks
+  if a.codeChallenge != pkcesupport.CodeChallenge(verifier) {
+    writer.WriteHeader(http.StatusBadRequest)
+    return
+  }
+
+  // todo - move to json web token
   data, _ := json.Marshal(struct {
     AccessToken string `json:"access_token"`
   }{"anAccessToken"})

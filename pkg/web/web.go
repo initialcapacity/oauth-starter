@@ -9,6 +9,7 @@ import (
   "github.com/gorilla/sessions"
   "github.com/initialcapacity/oauth-starter/pkg/healthsupport"
   "github.com/initialcapacity/oauth-starter/pkg/metricssupport"
+  "github.com/initialcapacity/oauth-starter/pkg/pkcesupport"
   "github.com/initialcapacity/oauth-starter/pkg/static"
   "github.com/initialcapacity/oauth-starter/pkg/websupport"
   "io"
@@ -37,6 +38,7 @@ type App struct {
   authUri      string
   tokenUri     string
   callbackUrl  string
+  verifier     string
 }
 
 func (a *App) LoadHandlers() func(x *mux.Router) {
@@ -49,8 +51,8 @@ func (a *App) LoadHandlers() func(x *mux.Router) {
     router.HandleFunc("/metrics", metricssupport.HandlerFunction)
     router.Use(metricssupport.Middleware)
 
-    static, _ := fs.Sub(static.Resources, "shared/static")
-    fileServer := http.FileServer(http.FS(static))
+    s, _ := fs.Sub(static.Resources, "shared/static")
+    fileServer := http.FileServer(http.FS(s))
     router.PathPrefix("/").Handler(http.StripPrefix("/", fileServer))
   }
 }
@@ -66,11 +68,15 @@ func (a *App) dashboard(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (a *App) login(writer http.ResponseWriter, _ *http.Request) {
+  a.verifier = pkcesupport.CodeVerifier()
+  challenge := pkcesupport.CodeChallenge(a.verifier)
   data := map[string]any{
-    "client_id":          a.clientId,
-    "authentication_url": a.authUri,
-    "$response_type":     "code", // 4.1.1. of IETF
-    "redirect_url":       a.callbackUrl,
+    "client_id":             a.clientId,
+    "authentication_url":    a.authUri,
+    "response_type":         "code", // (oauth ietf 4.1.1.)
+    "redirect_url":          a.callbackUrl,
+    "code_challenge":        challenge,
+    "code_challenge_method": "S256",
   }
   _ = websupport.ModelAndView(writer, &Resources, "login", websupport.Model{Map: data})
 }
@@ -84,8 +90,9 @@ func (a *App) callback(writer http.ResponseWriter, request *http.Request) {
     "grant_type":    []string{"authorization_code"},
     "code":          []string{request.URL.Query().Get("code")},
     "client_id":     []string{a.clientId},
-    "client_secret": []string{a.clientSecret},
+    "client_secret": []string{a.clientSecret}, // todo - not needed for pkce
     "redirect_url":  []string{a.callbackUrl},
+    "code_verifier": []string{a.verifier}, // todo - code_verifier replaces the client_secret
   }
 
   // todo - move code to authorization header
@@ -108,7 +115,7 @@ func (a *App) callback(writer http.ResponseWriter, request *http.Request) {
 
 type credentials struct {
   ClientId     string `json:"client_id"`
-  ClientSecret string `json:"client_secret"`
+  ClientSecret string `json:"client_secret"` // todo - not needed for pkce
   AuthUri      string `json:"auth_uri"`
   TokenUri     string `json:"token_uri"`
   CallbackUrl  string `json:"callback_url"`
@@ -132,12 +139,12 @@ func NewApp(addr string, client HTTPClient) (*http.Server, net.Listener) {
   _ = json.NewDecoder(strings.NewReader(credentialsJson)).Decode(&c)
   cookieStore := sessions.NewCookieStore([]byte(os.Getenv(key)))
   listener, _ := net.Listen("tcp", addr)
-  app := App{cookieStore, client,
-    c.ClientId,
-    c.ClientSecret,
-    c.AuthUri,
-    c.TokenUri,
-    c.CallbackUrl,
+  app := App{cookieStore: cookieStore, client: client,
+    clientId:     c.ClientId,
+    clientSecret: c.ClientSecret,
+    authUri:      c.AuthUri,
+    tokenUri:     c.TokenUri,
+    callbackUrl:  c.CallbackUrl,
   }
   return websupport.Create(listener.Addr().String(), app.LoadHandlers()), listener
 }

@@ -2,6 +2,7 @@
 {{- define "main"}}
     {{- $client_id := index .Map "client_id"}}
     {{- $redirect_url := index .Map "redirect_url"}}
+    {{- $code_challenge := index .Map "code_challenge"}}
     <section>
         <div class="container">
             <p>Sign in to continue to the client application.</p>
@@ -19,6 +20,7 @@
                 </fieldset>
                 <input type="hidden" name="client_id" value="{{- $client_id }}">
                 <input type="hidden" name="redirect_url" value="{{- $redirect_url }}">
+                <input type="hidden" name="code_challenge" value="{{- $code_challenge }}">
                 <input type="submit" value="Sign in" class="button">
             </form>
         </div>

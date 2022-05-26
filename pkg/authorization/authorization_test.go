@@ -3,6 +3,7 @@ package authorization_test
 import (
   "fmt"
   "github.com/initialcapacity/oauth-starter/pkg/authorization"
+  "github.com/initialcapacity/oauth-starter/pkg/pkcesupport"
   "github.com/initialcapacity/oauth-starter/pkg/testsupport"
   "github.com/initialcapacity/oauth-starter/pkg/websupport"
   "github.com/stretchr/testify/assert"
@@ -29,9 +30,15 @@ func TestAuthentication(t *testing.T) {
   body, _ := io.ReadAll(postForAuth.Body)
   assert.Contains(t, string(body), "<p>Sign in to continue to the client application.</p>")
 
+  verifier := pkcesupport.CodeVerifier()
+  challenge := pkcesupport.CodeChallenge(verifier)
+
   signInData := url.Values{
-    "client_id":    []string{"aClientId"},
-    "redirect_url": []string{"http://localhost:8889/callback"},
+    "username":       []string{"jerry.cantrell@gmail.com"},
+    "password":       []string{"boogydepot"},
+    "client_id":      []string{"aClientId"},
+    "redirect_url":   []string{"http://localhost:8889/callback"},
+    "code_challenge": []string{challenge},
   }
   client := &http.Client{
     CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -48,10 +55,23 @@ func TestAuthentication(t *testing.T) {
     "client_id":     []string{"aClientId"},
     "client_secret": []string{"aClientSecret"},
     "redirect_url":  []string{"http://localhost:8889/callback"},
+    "code_verifier": []string{verifier},
   }
 
   postForToken, _ := client.Post(fmt.Sprintf("http://%s/token", server.Addr), "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
   assert.Equal(t, http.StatusCreated, postForToken.StatusCode)
+
+  badData := url.Values{
+    "grant_type":    []string{"authorization_code"},
+    "code":          []string{"42"},
+    "client_id":     []string{"aClientId"},
+    "client_secret": []string{"aClientSecret"},
+    "redirect_url":  []string{"http://localhost:8889/callback"},
+    "code_verifier": []string{"T0ozQzBMVXFDa1VlRExmNzNFOEZVSFIwaldlTVdmdG1jem4zaWtJWnBVQmRzY0JrUkFCQjB5cnRGTTl2M2JoRQ"},
+  }
+
+  postForTokenWithBadVerifier, _ := client.Post(fmt.Sprintf("http://%s/token", server.Addr), "application/x-www-form-urlencoded", strings.NewReader(badData.Encode()))
+  assert.Equal(t, http.StatusBadRequest, postForTokenWithBadVerifier.StatusCode)
 
   websupport.Stop(server)
 }

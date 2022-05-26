@@ -58,7 +58,7 @@ func TestApp(t *testing.T) {
   getLogin, _ := http.Get(fmt.Sprintf("http://%s/login", server.Addr))
   bodyLogin, _ := io.ReadAll(getLogin.Body)
   assert.Contains(t, string(bodyLogin),
-    "<a href=\"http://localhost:8877/auth?response_type=code&client_id=aClientId&redirect_url=http%3a%2f%2flocalhost%3a8879%2fcallback\">\n")
+    "<a href=\"http://localhost:8877/auth?response_type=code&client_id=aClientId&redirect_url=http%3a%2f%2flocalhost%3a8879%2fcallback&code_challenge_method=S256&code_challenge=")
 
   client := &http.Client{
     CheckRedirect: func(req *http.Request, via []*http.Request) error {
