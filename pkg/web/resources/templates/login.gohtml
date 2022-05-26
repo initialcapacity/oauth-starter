@@ -7,8 +7,9 @@
         {{- $redirect_url := index .Map "redirect_url"}}
         {{- $code_challenge := index .Map "code_challenge"}}
         {{- $code_challenge_method := index .Map "code_challenge_method"}}
+        {{- $scope := index .Map "scope"}}
         <div class="container">
-            <a href="{{- $authentication_url}}?response_type={{- $response_type}}&client_id={{- $client_id}}&redirect_url={{- $redirect_url}}&code_challenge_method={{$code_challenge_method}}&code_challenge={{- $code_challenge}}">
+            <a href="{{- $authentication_url}}?response_type={{- $response_type}}&client_id={{- $client_id}}&redirect_url={{- $redirect_url}}&scope={{- $scope}}&code_challenge_method={{$code_challenge_method}}&code_challenge={{- $code_challenge}}">
                 Sign in with the Authorization Server</a>
         </div>
     </section>

@@ -15,6 +15,7 @@ import (
   "net"
   "net/http"
   "os"
+  "strings"
 )
 
 var (
@@ -48,14 +49,20 @@ func (a *App) dashboard(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func (a *App) authenticate(writer http.ResponseWriter, request *http.Request) {
+  scope := request.URL.Query().Get("scope")
   data := map[string]any{
     "client_id":      request.URL.Query().Get("client_id"),
     "redirect_url":   request.URL.Query().Get("redirect_url"),
     "code_challenge": request.URL.Query().Get("code_challenge"),
+    "scope":          scope,
   }
   // todo - confirm params were received
   // todo - verify client_id and redirect_url
   // todo - verify that a scope parameter is present and contains the openid scope value (openid 3.1.2.2)
+  if scope == "" || !strings.Contains(scope, "openid") {
+    writer.WriteHeader(http.StatusBadRequest)
+    return
+  }
   _ = websupport.ModelAndView(writer, &Resources, "grant_access", websupport.Model{Map: data})
 }
 

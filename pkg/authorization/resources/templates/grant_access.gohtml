@@ -3,9 +3,11 @@
     {{- $client_id := index .Map "client_id"}}
     {{- $redirect_url := index .Map "redirect_url"}}
     {{- $code_challenge := index .Map "code_challenge"}}
+    {{- $scope := index .Map "scope"}}
     <section>
         <div class="container">
             <p>Sign in to continue to the client application.</p>
+            <p>Scope {{$scope}}</p>
             <form action="signin" method="post">
                 <fieldset>
                     <label>

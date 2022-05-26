@@ -26,10 +26,15 @@ func TestAuthentication(t *testing.T) {
   getBody, _ := io.ReadAll(get.Body)
   assert.Contains(t, string(getBody), "Authorization server")
 
-  postForAuth, _ := http.Get(fmt.Sprintf("http://%s/auth?response_type=code&client_id=%s&redirect_url=%s",
-    server.Addr, "aClientId", "http://localhost:8889/callback"))
+  postForAuth, _ := http.Get(fmt.Sprintf("http://%s/auth?response_type=code&scope=%s&client_id=%s&redirect_url=%s",
+    server.Addr, "openid%20email", "aClientId", "http://localhost:8889/callback"))
   body, _ := io.ReadAll(postForAuth.Body)
   assert.Contains(t, string(body), "<p>Sign in to continue to the client application.</p>")
+  assert.Contains(t, string(body), "<p>Scope openid email</p>")
+
+  postForAuthMissingScope, _ := http.Get(fmt.Sprintf("http://%s/auth?response_type=code&client_id=%s&redirect_url=%s",
+    server.Addr, "aClientId", "http://localhost:8889/callback"))
+  assert.Equal(t, http.StatusBadRequest, postForAuthMissingScope.StatusCode)
 
   verifier := pkcesupport.CodeVerifier()
   challenge := pkcesupport.CodeChallenge(verifier)
@@ -40,6 +45,7 @@ func TestAuthentication(t *testing.T) {
     "client_id":      []string{"aClientId"},
     "redirect_url":   []string{"http://localhost:8889/callback"},
     "code_challenge": []string{challenge},
+    "scope":          []string{"openid email"},
   }
   client := &http.Client{
     CheckRedirect: func(req *http.Request, via []*http.Request) error {
