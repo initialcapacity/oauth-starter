@@ -17,14 +17,6 @@ import (
 )
 
 func TestAuthentication(t *testing.T) {
-  authorizationServer, authorizationListener := authorization.NewApp("localhost:18877")
-  go websupport.Start(authorizationServer, authorizationListener)
-  testsupport.WaitForHealthy(authorizationServer, "/health")
-
-  resourceServer, resourcesListener := resource.NewApp("localhost:18876")
-  go websupport.Start(resourceServer, resourcesListener)
-  testsupport.WaitForHealthy(resourceServer, "/health")
-
   _ = os.Setenv("CREDENTIALS_FILE", `{
   "client_id":"101010",
   "client_secret":"super_private",
@@ -33,16 +25,23 @@ func TestAuthentication(t *testing.T) {
   "callback_url":"http://localhost:18879/callback"
 }`)
 
+  authorizationServer, authorizationListener := authorization.NewApp("localhost:18877")
+  resourceServer, resourcesListener := resource.NewApp("localhost:18876")
   webserver, webListener := web.NewApp("localhost:18879", &http.Client{})
+
+  go websupport.Start(authorizationServer, authorizationListener)
+  go websupport.Start(resourceServer, resourcesListener)
   go websupport.Start(webserver, webListener)
+
+  testsupport.WaitForHealthy(authorizationServer, "/health")
+  testsupport.WaitForHealthy(resourceServer, "/health")
   testsupport.WaitForHealthy(webserver, "/health")
 
-  get, _ := http.Get("http://localhost:18879")
-  body, _ := io.ReadAll(get.Body)
-  assert.Contains(t, string(body), "Client application")
-  assert.Contains(t, string(body), "Sign in with the Authorization Server")
-  reg := regexp.MustCompile("&code_challenge=(.*?)")
-  challenge := reg.FindStringSubmatch(string(body))[1]
+  getHomepage, _ := http.Get("http://localhost:18879")
+  homepage, _ := io.ReadAll(getHomepage.Body)
+  assert.Contains(t, string(homepage), "Client application")
+  assert.Contains(t, string(homepage), "Sign in with the Authorization Server")
+  codeChallenge := regexp.MustCompile("&code_challenge=(.*?)").FindStringSubmatch(string(homepage))[1]
 
   // click sign in...
 
@@ -51,7 +50,7 @@ func TestAuthentication(t *testing.T) {
     "password":       []string{"boogydepot"},
     "client_id":      []string{"aClientId"},
     "redirect_url":   []string{"http://localhost:18879/callback"},
-    "code_challenge": []string{challenge},
+    "code_challenge": []string{codeChallenge},
   }
   var cookie *http.Cookie
   client := &http.Client{
@@ -62,16 +61,16 @@ func TestAuthentication(t *testing.T) {
       return nil
     },
   }
-  resp, _ := client.Post("http://localhost:18877/signin", "application/x-www-form-urlencoded", strings.NewReader(values.Encode()))
-  assert.Equal(t, http.StatusOK, resp.StatusCode)
+  signIn, _ := client.Post("http://localhost:18877/signin", "application/x-www-form-urlencoded", strings.NewReader(values.Encode()))
+  assert.Equal(t, http.StatusOK, signIn.StatusCode)
 
-  request, _ := http.NewRequest("GET", "http://localhost:18879", nil)
-  request.AddCookie(cookie)
-  response, _ := client.Do(request)
+  homepageRequest, _ := http.NewRequest("GET", "http://localhost:18879", nil)
+  homepageRequest.AddCookie(cookie)
+  getHomepage, _ = client.Do(homepageRequest)
 
-  responseBody, _ := io.ReadAll(response.Body)
-  assert.Contains(t, string(responseBody), "Client application")
-  assert.NotContains(t, string(responseBody), "Sign in with the Authorization Server")
+  homepage, _ = io.ReadAll(getHomepage.Body)
+  assert.Contains(t, string(homepage), "Client application")
+  assert.NotContains(t, string(homepage), "Sign in with the Authorization Server")
 
   websupport.Stop(webserver)
   websupport.Stop(resourceServer)
