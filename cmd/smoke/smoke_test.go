@@ -39,7 +39,7 @@ func TestAuthentication(t *testing.T) {
 
   getHomepage, _ := http.Get("http://localhost:18879")
   homepage, _ := io.ReadAll(getHomepage.Body)
-  assert.Contains(t, string(homepage), "Client application")
+  assert.Contains(t, string(homepage), "OAuth starter")
   assert.Contains(t, string(homepage), "Sign in with the Authorization Server")
   codeChallenge := regexp.MustCompile("&code_challenge=(.*?)").FindStringSubmatch(string(homepage))[1]
 
@@ -69,7 +69,7 @@ func TestAuthentication(t *testing.T) {
   getHomepage, _ = client.Do(homepageRequest)
 
   homepage, _ = io.ReadAll(getHomepage.Body)
-  assert.Contains(t, string(homepage), "Client application")
+  assert.Contains(t, string(homepage), "OAuth starter")
   assert.NotContains(t, string(homepage), "Sign in with the Authorization Server")
 
   websupport.Stop(webserver)

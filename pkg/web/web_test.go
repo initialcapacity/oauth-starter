@@ -72,7 +72,7 @@ func TestApp(t *testing.T) {
   response, _ := client.Do(request)
 
   responseBody, _ := io.ReadAll(response.Body)
-  assert.Contains(t, string(responseBody), "Client application")
+  assert.Contains(t, string(responseBody), "OAuth starter")
   assert.NotContains(t, string(responseBody), "Sign in with the Authorization Server")
 
   websupport.Stop(server)
