@@ -8,3 +8,5 @@ out
 .env*
 .postgres
 .freshcloud
+
+node_modules

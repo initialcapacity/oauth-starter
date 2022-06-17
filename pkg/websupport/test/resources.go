@@ -1,11 +1,11 @@
 package websupport_test
 
 import (
-  "embed"
-  _ "embed"
+	"embed"
+	_ "embed"
 )
 
 var (
-  //go:embed resources
-  Resources embed.FS
+	//go:embed resources
+	Resources embed.FS
 )

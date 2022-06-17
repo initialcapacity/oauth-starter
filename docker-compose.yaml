@@ -25,3 +25,15 @@ services:
     environment:
       PORT: 8889
       CREDENTIALS_FILE: '{"client_id":"101010","client_secret":"super_private","auth_uri":"http://localhost:8887/auth","token_uri":"http://oauth-authorization-server:8887/token","callback_url":"http://localhost:8889/callback"}'
+  web-server-react:
+    image: oauth-starter-web
+    container_name: oauth-web-server-react
+    ports:
+      - "8890:8890"
+    environment:
+      PORT: 8890
+      CLIENT_ID: aClientId
+      AUTH_URI: http://localhost:8887/auth
+      TOKEN_URI: http://localhost:8887/token
+      CALLBACK_URL: http://localhost:8890/#/callback
+      OAUTH_RESOURCE_SERVER: http://localhost:8888

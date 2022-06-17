@@ -1,0 +1,42 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && cp ./Procfile ./nginx/start.sh ./nginx/nginx.conf ./nginx/mime.types build",
+    "lint": "eslint src --ext .ts,.tsx",
+    "pack": "pack build oauth-starter-web --path ./build --builder paketobuildpacks/builder:base --buildpack gcr.io/paketo-buildpacks/nginx --buildpack gcr.io/paketo-buildpacks/procfile",
+    "test": "jest"
+  },
+  "dependencies": {
+    "crypto-js": "^4.1.1",
+    "random-seed": "^0.3.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-redux": "^8.0.2",
+    "react-router-dom": "^6.3.0",
+    "redux": "^4.2.0",
+    "ts-pattern": "^4.0.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^13.3.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/jest": "^28.1.1",
+    "@types/random-seed": "^0.3.3",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
+    "@vitejs/plugin-react": "^1.3.0",
+    "eslint": "^8.17.0",
+    "eslint-plugin-import": "^2.26.0",
+    "http-terminator": "^3.2.0",
+    "jest-environment-jsdom": "^28.1.0",
+    "ts-jest": "^28.0.4",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.9",
+    "vite-plugin-eslint": "^1.6.1",
+    "whatwg-fetch": "^3.6.2"
+  }
+}

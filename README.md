@@ -17,11 +17,21 @@ Install the following prerequisites.
 * [Go 1.18](https://go.dev)
 * [Pack](https://buildpacks.io)
 * [Docker Desktop](https://www.docker.com/products/docker-desktop)
+* [Node.js](https://nodejs.org/en/)
 
-Build with Pack.
+Build golang binaries with Pack.
 
 ```bash
 pack build oauth-starter --builder heroku/buildpacks:20
+```
+
+Build and pack the frontend app with NPM.
+
+```bash
+cd web
+npm run build
+npm run pack
+cd -
 ```
 
 Run with docker compose.
